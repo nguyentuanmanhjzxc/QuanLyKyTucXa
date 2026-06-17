@@ -6,6 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Room extends Model
 {
+    protected $fillable = [
+        'building_id',
+        'room_code',
+        'capacity',
+        'current_occupancy',
+        'price',
+        'status'
+    ];
+
     public function building()
     {
         return $this->belongsTo(Building::class);
@@ -25,5 +34,9 @@ class Room extends Model
     public function repairRequests()
     {
         return $this->hasMany(RepairRequest::class);
+    }
+        public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
     }
 }
