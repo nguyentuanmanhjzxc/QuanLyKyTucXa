@@ -29,15 +29,25 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    
     public function student()
     {
         return $this->hasOne(Student::class);
     }
+
     public function notifications()
     {
         return $this->hasMany(
             Notification::class,
             'created_by'
+        );
+    }
+
+    public function approvedRegistrations()
+    {
+        return $this->hasMany(
+            RoomRegistration::class,
+            'approved_by'
         );
     }
 }
