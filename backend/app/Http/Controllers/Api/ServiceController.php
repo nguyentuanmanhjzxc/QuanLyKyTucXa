@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Service;
+
 
 class ServiceController extends Controller
 {
@@ -12,7 +14,9 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(
+            Service::all()
+        );
     }
 
     /**
@@ -20,7 +24,28 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $exists = Service::where(
+            'service_name',
+            $request->service_name
+        )->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Tên dịch vụ đã tồn tại'
+            ],400);
+        }
+        if ($request->price <= 0) {
+            return response()->json([
+                'message' => 'Giá dịch vụ không hợp lệ'
+            ],400);
+        }
+        $service = Service::create([
+            'service_name' => $request->service_name,
+            'price' => $request->price,
+            'status' => $request->status
+        ]);
+
+        return response()->json($service, 201);
     }
 
     /**
@@ -28,7 +53,9 @@ class ServiceController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return response()->json(
+            Service::findOrFail($id)
+        );
     }
 
     /**
@@ -36,7 +63,32 @@ class ServiceController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $service = Service::findOrFail($id);
+
+        $exists = Service::where(
+            'service_name',
+            $request->service_name
+        )
+        ->where('id','!=',$id)
+        ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Tên dịch vụ đã tồn tại'
+            ],400);
+        }
+        if ($request->price <= 0) {
+            return response()->json([
+                'message' => 'Giá dịch vụ không hợp lệ'
+            ],400);
+        }
+        $service->update([
+            'service_name' => $request->service_name,
+            'price' => $request->price,
+            'status' => $request->status
+        ]);
+
+        return response()->json($service);
     }
 
     /**
@@ -44,6 +96,18 @@ class ServiceController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $service = Service::findOrFail($id);
+
+        if ($service->studentServices()->exists()) {
+            return response()->json([
+                'message' => 'Dịch vụ đang được sử dụng'
+            ],400);
+        }
+
+        $service->delete();
+        
+        return response()->json([
+            'message' => 'Deleted successfully'
+        ]);
     }
 }

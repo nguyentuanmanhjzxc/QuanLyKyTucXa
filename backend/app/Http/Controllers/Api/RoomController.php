@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Room;
-
+use App\Models\Student;
 
 class RoomController extends Controller
 {
@@ -24,11 +24,22 @@ class RoomController extends Controller
      */
     public function store(Request $request)
     {
+        $exists = Room::where(
+            'room_code',
+            $request->room_code
+        )->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Mã phòng đã tồn tại'
+            ],400);
+        }
+        
         $room = Room::create([
             'building_id' => $request->building_id,
             'room_code' => $request->room_code,
             'capacity' => $request->capacity,
-            'current_occupancy' => $request->current_occupancy,
+            'current_occupancy' => 0,
             'price' => $request->price,
             'status' => $request->status
         ]);
@@ -50,8 +61,36 @@ class RoomController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-    {
+    {   
+        if ($request->current_occupancy > $request->capacity) 
+        {
+            return response()->json([
+                'message' => 'Số người vượt quá sức chứa'
+            ],400);
+        }
+
         $room = Room::findOrFail($id);
+        if (
+            $room->current_occupancy >
+            $request->capacity
+        ) {
+            return response()->json([
+                'message' => 'Sức chứa nhỏ hơn số người hiện có'
+            ],400);
+        }
+        //ROOM
+        $exists = Room::where(
+            'room_code',
+            $request->room_code
+        )
+        ->where('id','!=',$id)
+        ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Mã phòng đã tồn tại'
+            ],400);
+        }
 
         $room->update([
             'building_id' => $request->building_id,
@@ -59,7 +98,7 @@ class RoomController extends Controller
             'capacity' => $request->capacity,
             'current_occupancy' => $request->current_occupancy,
             'price' => $request->price,
-            'status' => $request->status,
+            'status' => $request->status
         ]);
 
         return response()->json($room);
@@ -70,7 +109,14 @@ class RoomController extends Controller
      */
     public function destroy(string $id)
     {
-        Room::findOrFail($id)->delete();
+        $room = Room::findOrFail($id);
+
+        if ($room->current_occupancy > 0) {
+            return response()->json([
+                'message' => 'Phòng đang có sinh viên ở'
+            ],400);
+        }   
+        $room->delete();
 
         return response()->json([
             'message' => 'Deleted successfully'

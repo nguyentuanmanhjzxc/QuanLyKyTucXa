@@ -25,19 +25,8 @@ class Student extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function roomRegistrations()
-    {
-        return $this->hasMany(RoomRegistration::class);
-    }
-    public function roomAssignments()
-    {
-        return $this->hasMany(RoomAssignment::class);
-    }
-    public function roomTransferRequests()
-    {
-        return $this->hasMany(RoomTransferRequest::class);
-    }
-    public function services()
+    
+        public function services()
     {
         return $this->belongsToMany(
             Service::class,
@@ -50,14 +39,32 @@ class Student extends Model
         ])
         ->withTimestamps();
     }
+    
+    public function roomRegistrations()
+    {
+        return $this->hasMany(RoomRegistration::class);
+    }
+    
+    public function roomAssignments()
+    {
+        return $this->hasMany(RoomAssignment::class);
+    }
+
+    public function roomTransferRequests()
+    {
+        return $this->hasMany(RoomTransferRequest::class);
+    }
+
     public function violations()
     {
         return $this->hasMany(Violation::class);
     }
+
     public function feedbacks()
     {
         return $this->hasMany(Feedback::class);
     }
+
     public function repairRequests()
     {
         return $this->hasMany(RepairRequest::class);

@@ -22,6 +22,16 @@ class BuildingController extends Controller
      */
     public function store(Request $request)
     {
+        $exists = Building::where(
+            'building_name',
+            $request->building_name
+        )->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Tên tòa nhà đã tồn tại'
+            ],400);
+        }
         $building = Building::create([
             'building_name' => $request->building_name,
             'gender' => $request->gender,
@@ -50,8 +60,33 @@ class BuildingController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-    {
+    {   
+
+        $exists = Building::where(
+            'building_name',
+            $request->building_name
+        )
+        ->where('id','!=',$id)
+        ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Tên tòa nhà đã tồn tại'
+            ],400);
+        }
+        
+
         $building = Building::findOrFail($id);
+        if (
+            $building->gender != $request->gender &&
+            $building->rooms()
+            ->where('current_occupancy','>',0)
+            ->exists()
+        ) {
+            return response()->json([
+                'message' => 'Không thể đổi giới tính tòa nhà khi còn sinh viên ở'
+            ],400);
+        }
 
         $building->update([
             'building_name' => $request->building_name,
@@ -67,7 +102,15 @@ class BuildingController extends Controller
      */
     public function destroy(string $id)
     {
-        Building::findOrFail($id)->delete();
+        $building = Building::findOrFail($id);
+
+        if ($building->rooms()->count() > 0) {
+            return response()->json([
+                'message' => 'Tòa nhà vẫn còn phòng'
+            ],400);
+        }
+
+        $building->delete();
 
         return response()->json([
             'message' => 'Deleted successfully'
