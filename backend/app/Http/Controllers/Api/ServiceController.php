@@ -34,11 +34,13 @@ class ServiceController extends Controller
                 'message' => 'Tên dịch vụ đã tồn tại'
             ],400);
         }
+        
         if ($request->price <= 0) {
             return response()->json([
                 'message' => 'Giá dịch vụ không hợp lệ'
             ],400);
         }
+
         $service = Service::create([
             'service_name' => $request->service_name,
             'price' => $request->price,
@@ -77,11 +79,14 @@ class ServiceController extends Controller
                 'message' => 'Tên dịch vụ đã tồn tại'
             ],400);
         }
+
         if ($request->price <= 0) {
             return response()->json([
                 'message' => 'Giá dịch vụ không hợp lệ'
             ],400);
         }
+
+        
         $service->update([
             'service_name' => $request->service_name,
             'price' => $request->price,
@@ -105,7 +110,7 @@ class ServiceController extends Controller
         }
 
         $service->delete();
-        
+
         return response()->json([
             'message' => 'Deleted successfully'
         ]);

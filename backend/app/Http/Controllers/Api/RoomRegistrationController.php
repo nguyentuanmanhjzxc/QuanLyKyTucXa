@@ -101,7 +101,7 @@ class RoomRegistrationController extends Controller
             'room_id' => $request->room_id,
             'proof_file' => $request->proof_file,
             'registration_date' => $request->registration_date,
-            'status' => $request->status,
+            'status' => 'ChoDuyet',
             'approved_by' => $request->approved_by,
             'approved_at' => $request->approved_at
         ]);
@@ -124,19 +124,6 @@ class RoomRegistrationController extends Controller
      */
     public function update(Request $request, string $id)
     {   
-
-        $assigned = RoomAssignment::where(
-            'student_id',
-            $request->student_id
-        )
-        ->where('status','DangO')
-        ->exists();
-
-        if ($assigned) {
-            return response()->json([
-                'message' => 'Sinh viên đang ở phòng'
-            ],400);
-        }
         
         $request->validate([
             'student_id' => 'required',
@@ -175,7 +162,16 @@ class RoomRegistrationController extends Controller
         }
 
         $registration = RoomRegistration::findOrFail($id);
-
+        if ($registration->status != 'ChoDuyet') {
+            return response()->json([
+                'message' => 'Đơn đã được xử lý'
+            ],400);
+        }
+        if ($registration->student_id != $request->student_id) {
+            return response()->json([   
+                'message' => 'Không được đổi sinh viên'
+            ],400);
+        }
         // phòng đầy
         if (
             $registration->room_id != $request->room_id &&
@@ -187,13 +183,10 @@ class RoomRegistrationController extends Controller
         }
 
         $registration->update([
-            'student_id' => $request->student_id,
             'room_id' => $request->room_id,
             'proof_file' => $request->proof_file,
             'registration_date' => $request->registration_date,
-            'status' => $request->status,
-            'approved_by' => $request->approved_by,
-            'approved_at' => $request->approved_at
+            'status' => 'ChoDuyet',
         ]);
 
         return response()->json($registration);
@@ -204,7 +197,15 @@ class RoomRegistrationController extends Controller
      */
     public function destroy(string $id)
     {
-        RoomRegistration::findOrFail($id)->delete();
+        $registration = RoomRegistration::findOrFail($id);
+        
+        if ($registration->status != 'ChoDuyet') {
+            return response()->json([
+                'message' => 'Đơn đã được xử lý'
+            ],400);
+        }
+
+        $registration->delete();
 
         return response()->json([
             'message' => 'Deleted successfully'

@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\RoomRegistrationController;
 use App\Http\Controllers\Api\RoomAssignmentController;
 use App\Http\Controllers\Api\ServiceController;
+use App\Http\Controllers\Api\StudentServiceController;
+use App\Http\Controllers\Api\RoomTransferRequestController;
 
 
 
@@ -23,3 +25,5 @@ Route::apiResource('rooms', RoomController::class);
 Route::apiResource('room-registrations',RoomRegistrationController::class);
 Route::apiResource('room-assignments', RoomAssignmentController::class);
 Route::apiResource('services', ServiceController::class);
+Route::apiResource('student-services', StudentServiceController::class);
+Route::apiResource('room-transfer-requests',RoomTransferRequestController::class);

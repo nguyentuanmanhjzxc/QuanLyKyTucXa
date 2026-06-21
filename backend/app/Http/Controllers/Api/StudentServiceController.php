@@ -15,9 +15,15 @@ class StudentServiceController extends Controller
      */
     public function index()
     {
+        StudentService::where('status','Active')
+            ->whereDate('end_date','<',today())
+            ->update([
+                'status' => 'Inactive'
+        ]);
         return response()->json(
             StudentService::all()
         );
+        
     }
 
     /**
@@ -72,6 +78,14 @@ class StudentServiceController extends Controller
             return response()->json([
                 'message' => 'Ngày kết thúc không hợp lệ'
             ], 400);
+        }
+        if (
+            $request->end_date &&
+            $request->end_date < date('Y-m-d')
+        ) {
+            return response()->json([
+                'message' => 'Ngày kết thúc đã hết hạn'
+            ],400);
         }
         
 
@@ -129,21 +143,35 @@ class StudentServiceController extends Controller
             ],400);
         }
 
-        if ($studentService->student_id != $request->student_id)
+        if (
+            $request->has('student_id') &&
+            $studentService->student_id != $request->student_id
+        )
         {
             return response()->json([
-                'message' =>
-                'Không được đổi sinh viên'
+                'message' => 'Không được đổi sinh viên'
             ],400);
         }
 
-        if ($studentService->service_id != $request->service_id) 
+        if (
+            $request->has('service_id') &&
+            $studentService->service_id != $request->service_id
+        )
         {
             return response()->json([
-                'message' =>
-                'Không được đổi dịch vụ'
+                'message' => 'Không được đổi dịch vụ'
             ],400);
         }
+        if (
+            $request->start_date &&
+            $request->start_date != $studentService->start_date
+        )
+        {
+            return response()->json([
+                'message' => 'Không được thay đổi ngày bắt đầu'
+            ],400);
+        }
+
 
         if ($request->end_date && $request->end_date < $request->start_date
         ) {
@@ -158,6 +186,15 @@ class StudentServiceController extends Controller
         ) {
             return response()->json([
                 'message' => 'Trạng thái không hợp lệ'
+            ],400);
+        }
+        if (
+            $request->status == 'Active' &&
+            $request->end_date &&
+            $request->end_date < date('Y-m-d')
+        ) {
+            return response()->json([
+                'message' => 'Dịch vụ đã hết hạn'
             ],400);
         }
 

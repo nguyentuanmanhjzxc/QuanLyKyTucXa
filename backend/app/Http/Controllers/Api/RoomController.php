@@ -35,13 +35,14 @@ class RoomController extends Controller
             ],400);
         }
         
+        
         $room = Room::create([
             'building_id' => $request->building_id,
             'room_code' => $request->room_code,
             'capacity' => $request->capacity,
             'current_occupancy' => 0,
             'price' => $request->price,
-            'status' => $request->status
+            'status' => 'ConCho'
         ]);
 
         return response()->json($room,201);
@@ -68,6 +69,7 @@ class RoomController extends Controller
                 'message' => 'Số người vượt quá sức chứa'
             ],400);
         }
+        
 
         $room = Room::findOrFail($id);
         if (
@@ -92,14 +94,23 @@ class RoomController extends Controller
             ],400);
         }
 
+        $status = $room->status;
+
+        if ($request->current_occupancy >= $request->capacity) {
+            $status = 'DayPhong';
+        }
+        elseif ($room->status != 'BaoTri') {
+            $status = 'ConCho';
+        }
         $room->update([
             'building_id' => $request->building_id,
             'room_code' => $request->room_code,
             'capacity' => $request->capacity,
             'current_occupancy' => $request->current_occupancy,
             'price' => $request->price,
-            'status' => $request->status
+            'status' => $status
         ]);
+
 
         return response()->json($room);
     }

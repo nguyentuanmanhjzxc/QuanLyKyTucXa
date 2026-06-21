@@ -46,7 +46,9 @@ class RoomAssignmentController extends Controller
         );
 
         //Chặn sinh viên chưa được duyệt đăng ký KTX
-        if ($student->status == 'ChoDuyet' ||$student->status == 'BuocThoiO') 
+        if (
+            $student->status != 'DangO'
+        )
         {
             return response()->json([
                 'message' => 'Sinh viên không đủ điều kiện ở KTX'
