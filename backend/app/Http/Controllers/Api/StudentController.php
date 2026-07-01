@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Student;
+use App\Models\User;
 
 
 class StudentController extends Controller
@@ -58,7 +59,29 @@ class StudentController extends Controller
             ],400);
         }
 
-        $student = Student::create($request->all());
+        //$student = Student::create($request->all());
+
+        $user = User::create([
+            'username' => $request->student_code,
+            'password' => $request->student_code,
+            'role' => 'student',
+            'status' => 'active'
+        ]);
+
+        $student = Student::create([
+            'user_id' => $user->id,
+            'student_code' => $request->student_code,
+            'full_name' => $request->full_name,
+            'gender' => $request->gender,
+            'dob' => $request->dob,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'faculty' => $request->faculty,
+            'class_name' => $request->class_name,
+            'guardian_name' => $request->guardian_name,
+            'guardian_phone' => $request->guardian_phone,
+            'status' => $request->status ?? 'ChoDuyet'
+        ]);
 
         return response()->json($student, 201);
     }
@@ -128,7 +151,27 @@ class StudentController extends Controller
                 'message' => 'Không thể đổi giới tính khi đang ở KTX'
             ],400);
         }
+        
+        $userExists = User::where(
+            'username',
+            $request->student_code
+        )
+        ->where('id','!=',$student->user_id)
+        ->exists();
 
+        if ($userExists) {
+            return response()->json([
+                'message' => 'Username đã tồn tại'
+            ],400);
+        }
+
+        $user = User::find($student->user_id);
+
+        if ($user) {
+            $user->update([
+                'username' => $request->student_code
+            ]);
+        }
         $student->update($request->all());
 
         return response()->json($student);
@@ -149,6 +192,12 @@ class StudentController extends Controller
                 'message' => 'Sinh viên đang ở KTX'
             ],400);
         }
+        $user = User::find($student->user_id);
+
+        if ($user) {
+            $user->delete();
+        }
+
         $student->delete();
 
         return response()->json([

@@ -23,7 +23,6 @@ return new class extends Migration
             $table->enum('payment_method',[
                 'Cash',
                 'Banking',
-                'Momo'
             ])->nullable();
 
             $table->decimal('amount',12,2)->nullable();
